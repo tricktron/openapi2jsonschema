@@ -16,7 +16,7 @@ env:
 
 jobs:
   ci:
-    name: ubuntu-latest
+    name: CI
     runs-on: ubuntu-latest
     steps:
       - name: Clone repository

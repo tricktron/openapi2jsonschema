@@ -12,7 +12,7 @@ env:
   CI_REGISTRY: ghcr.io
   CI_REGISTRY_USER: ${{ github.actor }}
   CI_REGISTRY_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
-  CI_REGISTRY_IMAGE: ${{ env.CI_REGISTRY }}/${{ github.repository }}
+  CI_REGISTRY_IMAGE: ghcr.io/${{ github.repository }}
 
 jobs:
   ci:

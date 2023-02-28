@@ -1,11 +1,54 @@
-name: ci
-on: push
+name: CI
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  workflow_dispatch:
+
+env:
+  FORCE_COLOR: 2
+  CI_REGISTRY: ghcr.io
+  CI_REGISTRY_USER: ${{ github.actor }}
+  CI_REGISTRY_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
+  CI_REGISTRY_IMAGE: ${{ env.CI_REGISTRY }}/${{ github.repository }}
+
 jobs:
-  build:
+  ci:
+    name: ubuntu-latest
     runs-on: ubuntu-latest
     steps:
-      - name: checkout
-        uses: actions/checkout@v2
+      - name: Clone repository
+        uses: actions/checkout@v3
 
-      - name: build
-        run: make docker-image
+      - name: Install Nix with Flakes Support and Haskell Nix Binary Cache
+        uses: cachix/install-nix-action@v19
+        with:
+          extra_nix_config: |
+            experimental-features = nix-command flakes
+            substituters = https://hydra.iohk.io https://cache.nixos.org
+            trusted-public-keys = hydra.iohk.io:f/Ea+s+dFdN+3Y/G+FDgSq+a5NEWhJGzdjvKNGv0/EQ= cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY=
+            allowed-users = *
+      - name: Use Cachix to Pull and Push Binary Cache
+        uses: cachix/cachix-action@v12
+        with:
+          name: tricktron
+          authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
+
+      - name: Cache Dev Shell
+        run: nix develop
+
+      - name: Build Openapi2jsonschema
+        run: nix build .
+
+      - name: Build and push Openapi2jsonschema amd64 image
+        run: nix run .
+
+      - name: Build and push Openapi2jsonschema arm64 image
+        run: nix run .#push-arm64-image-to-registry
+
+      - name: Create multi arch image and retag it as latest
+        run: |
+          nix run .#create-multi-arch-manifest
+          nix run .#retag-image

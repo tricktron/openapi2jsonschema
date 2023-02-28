@@ -92,8 +92,63 @@
         packages = 
         {
             default = openapi2jsonschema-drv;
-            openapi2jsonschema-image = openapi2jsonschema-image pkgs;
+            openapi2jsonschema-image-amd64 = openapi2jsonschema-image pkgs.pkgsStatic;
+            openapi2jsonschema-image-arm64 = openapi2jsonschema-image pkgs.pkgsCross.aarch64-multiplatform-musl.pkgsStatic;
         };
+
+        apps =
+        let registryUser     = ''"$CI_REGISTRY_USER"'';
+            registryPassword = ''"$CI_REGISTRY_PASSWORD"'';
+            registry         = ''"$CI_REGISTRY"'';
+            registryImage    = ''"$CI_REGISTRY_IMAGE"/openapi2jsonschema'';
+        in
+        {
+            push-amd64-image-to-registry = 
+            { 
+                type = "app"; 
+                program = "${pushContainerToRegistry 
+                { 
+                    streamLayeredImage = self.packages.${system}.openapi2jsonschema-image-amd64;
+                    registry = "${registryImage}-amd64:${version}";
+                    inherit registryUser registryPassword;
+                }}/bin/pushToRegistry.sh"; 
+            };
+            
+            push-arm64-image-to-registry = 
+            { 
+                type = "app"; 
+                program = "${pushContainerToRegistry 
+                { 
+                    streamLayeredImage = self.packages.${system}.openapi2jsonschema-image-amd64;
+                    registry = "${registryImage}-arm64:${version}";
+                    inherit registryUser registryPassword;
+                }}/bin/pushToRegistry.sh"; 
+            };
+
+            create-multi-arch-manifest = 
+            { 
+                type = "app"; 
+                program = "${createMultiArchManifest 
+                {
+                    inherit registryUser registryPassword registryImage;
+                    tag = version;
+                }}/bin/createMultiArchManifest.sh"; 
+            };
+
+            retag-image = 
+            { 
+                type = "app"; 
+                program = "${retagImage 
+                {
+                    inherit registryUser registryPassword registry;
+                    imageUrl = "${registryImage}:${version}";
+                    newTag = "latest";
+                }}/bin/retagImage.sh"; 
+            };
+
+            default = self.apps.${system}.push-amd64-image-to-registry;
+        };
+
         devShells.default = pkgs.mkShell 
         {
             packages = with pkgs;

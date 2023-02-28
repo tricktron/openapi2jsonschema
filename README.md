@@ -3,6 +3,7 @@
 A utility to extract [JSON Schema](http://json-schema.org/) from a
 valid [OpenAPI](https://www.openapis.org/) specification.
 
+This fork includes support for Openshift.
 
 ## Why
 
@@ -13,19 +14,17 @@ existing OpenAPI tooling. Generating separate schemas for types defined
 in OpenAPI allows for all sorts of indepent tooling to be build which
 can be easily maintained, because the canonical definition is shared.
 
+## Docker
 
-## Installation
+Multi-arch Docker images are available at `ghcr.io/tricktron/openapi2jsonschema/openapi2jsonschema`
+and you can run it like so:
+```bash
+# From URL
+docker run -v $(pwd):/tmp --rm ghcr.io/tricktron/openapi2jsonschema/openapi2jsonschema -o /tmp/test-schema --strict --kubernetes https://raw.githubusercontent.com/kubernetes/kubernetes/master/api/openapi-spec/swagger.json
 
-`openapi2jsonschema` is implemented in Python. Assuming you have a
-Python intepreter and pip installed you should be able to install with:
-
+# From a FILE
+docker run -v $(pwd):/tmp --rm ghcr.io/tricktron/openapi2jsonschema/openapi2jsonschema -o /tmp/test-schema --strict --kubernetes /tmp/openapi.json
 ```
-pip install openapi2jsonschema
-```
-
-This has not yet been widely tested and is currently in a _works on my
-machine_ state.
-
 
 ## Usage
 
@@ -56,14 +55,54 @@ Options:
   --help             Show this message and exit.
 ```
 
-
 ## Example
 
-My specific usecase was being able to validate a Kubernetes
-configuration file without a Kubernetes client like `kubectl` and
-without the server. For that I have a bash script,
-[available here](https://github.com/instrumenta/kubernetes-json-schema/blob/master/build.sh).
+My specific usecase was being able to validate Openshift
+configuration files with the [YAML language server](https://github.com/redhat-developer/yaml-language-server).
 
-The output from running this script can be seen in the accompanying
-[instrumenta/kubernetes-json-schema](https://github.com/instrumenta/kubernetes-json-schema).
+There is currently an [open pull request](https://github.com/redhat-developer/yaml-language-server/pull/841) to add support for custom Kubernetes and
+Openshift schemas. Until the pr is merged you can use my [fork](https://github.com/tricktron/yaml-language-server) of the
+YAML language server or directly download the updated VSCode extension from my
+[forks Github action](https://github.com/tricktron/vscode-yaml/actions/runs/4261755318)
+and install it with `Install from VSIX...`.
 
+Afterwards you can get and convert your Openshift schemas as follows:
+
+1. Get the OpenAPI definition from your Openshift cluster and convert it to JSON
+schemas with the following commands:
+
+    ```bash
+    # login to your Oopenshift cluster
+    oc get --raw /openapi/v2 > openapi.json
+    mkdir openshift-schemas
+    docker run -v $(pwd):/tmp --rm ghcr.io/tricktron/openapi2jsonschema/openapi2jsonschema -o /tmp/openshift-schemas --strict --kubernetes /tmp/openapi.json
+    ```
+
+2. Rename the `openshift-schemas/all.json` to `openshift-schemas/kubernetes-all.json`.
+It is important that the file name includes the word `kubernetes`.
+
+3. Finally, you can configure the YAML language server to use the schemas by
+adding the following to your `.vscode/settings.json`:
+
+    ```json
+    {
+      "yaml.schemas": {
+            "openshift-schemas/kubernetes-all.json": [
+                "*.yml",
+                "*.yaml",
+            ]
+        }
+    }
+    ```
+
+## Manual Installation
+
+`openapi2jsonschema` is implemented in Python. Assuming you have a
+Python intepreter and pip installed you should be able to install with:
+
+```
+pip install openapi2jsonschema
+```
+
+This has not yet been widely tested and is currently in a _works on my
+machine_ state.

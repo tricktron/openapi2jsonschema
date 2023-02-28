@@ -2,9 +2,9 @@ name: CI
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [ master ]
   pull_request:
-    branches: [ main, develop ]
+    branches: [ master ]
   workflow_dispatch:
 
 env:
@@ -43,15 +43,15 @@ jobs:
         run: nix build .
 
       - name: Build and push Openapi2jsonschema amd64 image
-        if: github.ref == 'refs/heads/develop'
+        if: github.ref == 'refs/heads/master'
         run: nix run .
 
       - name: Build and push Openapi2jsonschema arm64 image
-        if: github.ref == 'refs/heads/develop'
+        if: github.ref == 'refs/heads/master'
         run: nix run .#push-arm64-image-to-registry
 
       - name: Create multi arch image and retag it as latest
-        if: github.ref == 'refs/heads/develop'
+        if: github.ref == 'refs/heads/master'
         run: |
           nix run .#create-multi-arch-manifest
           nix run .#retag-image

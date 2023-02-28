@@ -3,7 +3,7 @@
 A utility to extract [JSON Schema](http://json-schema.org/) from a
 valid [OpenAPI](https://www.openapis.org/) specification.
 
-This fork includes support to generate OpenAPI schemas for Openshift.
+This fork includes support for Openshift.
 
 ## Why
 
@@ -68,7 +68,9 @@ and install it with `Install from VSIX...`.
 
 Afterwards you can get and convert your Openshift schemas as follows:
 
-1. 
+1. Get the OpenAPI definition from your Openshift cluster and convert it to JSON
+schemas with the following commands:
+
     ```bash
     # login to your Oopenshift cluster
     oc get --raw /openapi/v2 > openapi.json

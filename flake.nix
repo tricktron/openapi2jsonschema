@@ -119,7 +119,7 @@
                 type = "app"; 
                 program = "${pushContainerToRegistry 
                 { 
-                    streamLayeredImage = self.packages.${system}.openapi2jsonschema-image-amd64;
+                    streamLayeredImage = self.packages.${system}.openapi2jsonschema-image-arm64;
                     registry = "${registryImage}-arm64:${version}";
                     inherit registryUser registryPassword;
                 }}/bin/pushToRegistry.sh"; 

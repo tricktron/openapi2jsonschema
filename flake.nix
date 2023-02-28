@@ -47,6 +47,7 @@
                 Entrypoint = [ "${openapi2jsonschema-drv}/bin/openapi2jsonschema" ];
                 Cmd        = [ "--help" ]; 
             };
+            contents = [ pkgs.dockerTools.caCertificates ];
         };
 
         pushContainerToRegistry = { streamLayeredImage, registry, registryUser, registryPassword }: 

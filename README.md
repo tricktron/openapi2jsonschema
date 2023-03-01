@@ -1,4 +1,4 @@
-![Build & Tests](https://github.com/tricktron/openapi2jsonschema/actions/workflows/main.yml/badge.svg)
+![CI](https://github.com/tricktron/openapi2jsonschema/actions/workflows/main.yml/badge.svg)
 
 # openapi2jsonschema
 

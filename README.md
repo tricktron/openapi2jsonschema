@@ -1,3 +1,5 @@
+![CI](https://github.com/tricktron/openapi2jsonschema/actions/workflows/main.yml/badge.svg)
+
 # openapi2jsonschema
 
 A utility to extract [JSON Schema](http://json-schema.org/) from a
